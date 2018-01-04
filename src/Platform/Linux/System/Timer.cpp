@@ -89,9 +89,11 @@ void Timer::sleep(std::chrono::nanoseconds duration) {
         if (!timerContext->interrupted) {
           uint64_t value = 0;
           if(::read(timer, &value, sizeof value) == -1 ){
-            if(errno == EAGAIN || errno == EWOULDBLOCK) {
-              timerContext->interrupted = true;
-              dispatcher->pushContext(timerContext->context);
+            if(errno != EAGAIN) {
+              if(errno != EWOULDBLOCK) {
+                timerContext->interrupted = true;
+                dispatcher->pushContext(timerContext->context);
+               }
             } else {
               throw std::runtime_error("Timer::interrupt, read failed, "  + lastErrorMessage());
             }
